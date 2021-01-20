@@ -21,5 +21,15 @@ class TestProcessPayment(unittest.TestCase):
 	
 	def test_process_payment_status_code_200(self):
 		tester   = app.test_client(self)
-		response  =  tester.post("/process-payment", this.request_data)
+		print(tester)
+		response  =  tester.post("/process-payment", self.request_data)
 		self.assertEqual(response.status_code, 200)
+
+	def test_payment_process_context(self):
+		tester   = app.test_client(self)
+		response  =  tester.post("/process-payment", self.request_data)
+		self.assertEqual(response.content_type, "application/json")
+
+
+if __name__ == "__main__":
+	unittest.main()

@@ -61,8 +61,21 @@ class ProcessPayment(Resource):
 	def post(self):
 		args = _process_payment_reqparse.parse_args(strict=True)
 
-		if type args.amount is decimal.Decimal:
-			abort(400, massage: "Your amount must be a valid amount e.g 300.0")
+		if type(args.amount) is decimal.Decimal:
+			abort(400, {"massage": "Your amount must be a valid amount e.g 300.0"})
 		if len(arags.credit_card_number) != 16:
-			abort(400, massage: "Please provide valid credit card number")
-		return 
+			abort(400, {"massage": "Please provide valid credit card number"})
+
+
+		if args.amount < 20:
+			cheap_payment_gateway(args.amount)
+		elif (args.amount >  20) and (args.amount <= 500):
+			expensive_payment_gateway(args.amount)
+
+		elif args.amount  > 500:
+			 premium_payment_gateway(args.amount)
+
+		return json.dumps({
+			message: "Successfully processed your payment"
+		}), 200
+api.add_resource(ProcessPayment, "/process-payment")
