@@ -21,7 +21,7 @@ The following response will only show the required `data fields`
 **Request**
 ```json
 {
-	"credit_card_number": '5500000000000004',
+	"credit_card_number": "5500000000000004",
 	"card_holder": "Omambia Dauglous",
 	"expiration_date": "12/24",
 	"security_code": "290",
@@ -36,7 +36,7 @@ The following response will only show the required `data fields`
 ```json
 {
 	"message": "Successfully processed your payment",
-	data: {
+	"data": {
 		"amount": 200.0,
 		"card_holder": "Omambia Dauglous"
 	} 
