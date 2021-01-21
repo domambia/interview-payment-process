@@ -44,7 +44,6 @@ class TestProcessPayment(unittest.TestCase):
 	def test_user_provides_amount_to_process(self):
 		"""Test that use provides valid amount and is not empty"""
 		amount  = int(200.0)
-		print(self.payment.get_amount())
 		# test amount is provided
 		self.assertTrue(self.payment.get_amount())
 		# test that user must provide amound
