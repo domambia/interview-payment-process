@@ -1,18 +1,24 @@
+import decimal, json, markdown
 from app import app 
+from flask import abort
+from app import process_payment
 from flask_restful import Resource, Api, reqparse
 
 
 api = Api(app)
 
+
+class HomePage(Resource):
+	def get(self):
+		return {"message": "Hello!!"}, 200
+	
+	def post(self):
+		return  {"message" : "Hello"}, 201
+
+
+api.add_resource(HomePage, "/")
 # Args parser
-"""
-self.request_data  = {
-			"credit_card_number": '5500000000000004',
-			"card_holder": "Omambia Dauglous",
-			"expiration_date": "12/24",
-			"security_code": "990",
-			"amount": 0.0344
-		}
+""" Process Payment Argument Parse
 """
 
 _process_payment_reqparse =  reqparse.RequestParser()
@@ -41,11 +47,12 @@ _process_payment_reqparse.add_argument(
 
 _process_payment_reqparse.add_argument(
 	"amount", 
+	type=int,
 	help="Please provide amount",
 	required =  True)
 
 """
-Assumed Methods
+Assumed External Payment  Service
 """
 def premium_payment_gateway(amount):
 	pass
@@ -57,25 +64,45 @@ def cheap_payment_gateway(amount):
 	pass
 
 
-class ProcessPayment(Resource):
+class ProcessPaymentResource(Resource):
 	def post(self):
 		args = _process_payment_reqparse.parse_args(strict=True)
 
-		if type(args.amount) is decimal.Decimal:
-			abort(400, {"massage": "Your amount must be a valid amount e.g 300.0"})
-		if len(arags.credit_card_number) != 16:
-			abort(400, {"massage": "Please provide valid credit card number"})
+		payment = process_payment.PaymentProcess(
+			args.credit_card_number, 
+			args.card_holder, 
+			args.expiration_date, 
+			args.amount, 
+			args.security_code)
+
+		if payment.get_amount() is None:
+			abort(400, {
+				"massage": "Your amount must be a valid amount and can not be empty e.g 300.0",
+				"data": {
+					"amount": payment.get_amount()
+				}})
+		if len(payment.get_credit_card_number()) != 16:
+			abort(400, {
+				"massage": "Please provide valid credit card number",
+				"data": {
+					"credit_card_number": payment.get_credit_card_number()
+				}})
 
 
-		if args.amount < 20:
-			cheap_payment_gateway(args.amount)
-		elif (args.amount >  20) and (args.amount <= 500):
-			expensive_payment_gateway(args.amount)
+		if payment.get_amount() < 20:
+			cheap_payment_gateway(payment.get_amount())
+		elif (payment.get_amount() >  20) and (payment.get_amount() <= 500):
+			expensive_payment_gateway(payment.get_amount())
 
-		elif args.amount  > 500:
-			 premium_payment_gateway(args.amount)
+		elif payment.get_amount()  > 500:
+			 premium_payment_gateway(payment.get_amount())
 
-		return json.dumps({
-			message: "Successfully processed your payment"
-		}), 200
-api.add_resource(ProcessPayment, "/process-payment")
+		return {
+			"message": "Successfully processed your payment",
+			"data": {
+				"amount": payment.get_amount(),
+				"card_holder": args.card_holder 
+			}
+		}, 200
+
+api.add_resource(ProcessPaymentResource, "/process-payment")
